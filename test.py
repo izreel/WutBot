@@ -1,4 +1,8 @@
 import discord
+import json
+
+with open('key.config') as json_file:
+    data = json.load(json_file)
 
 client = discord.Client()
 
@@ -16,4 +20,4 @@ async def on_message(message):
     
     
 
-client.run('')
+client.run(data.get("token"))
