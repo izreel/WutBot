@@ -7,10 +7,9 @@ with open('key.config') as json_file:
 
 client = discord.Client()
 
-options = {
+download_options = {
     # 'download_archive' : 'Download_Archive',
     'outtmpl' : '%(display_id)s.%(ext)s',
-    # 'format' : 'bestaudio/best',
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'mp3',
@@ -18,6 +17,13 @@ options = {
     }]
 }
 
+def download_audio(url):
+    audio_file = url.split('=')[1] + '.mp3'
+
+    with youtube_dl.YoutubeDL(download_options) as ydl:
+        ydl.download([url])
+    
+    return audio_file
 
 @client.event
 async def on_ready():
@@ -41,16 +47,13 @@ async def on_message(message):
 
     if message.content.startswith('$play'):
         video_url = message.content.split(' ')[1]
-        audio_file = video_url.split('=')[1] + '.mp3'
 
-        with youtube_dl.YoutubeDL(options) as ydl:
-            ydl.download([video_url])
+        audio_source = await discord.FFmpegOpusAudio.from_probe(download_audio(video_url))
         
-        source = await discord.FFmpegOpusAudio.from_probe(audio_file)
+        if not client.voice_clients:
+            channel = message.author.voice.channel
+            await channel.connect()
         
-        channel = message.author.voice.channel
-        await channel.connect()
-        
-        client.voice_clients[0].play(source)
+        client.voice_clients[0].play(audio_source)
 
 client.run(data.get("token"))
