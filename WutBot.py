@@ -19,17 +19,21 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    if message.author.id == 163221581051592704:
+        await message.channel.send('ignored')
+        return
+
     if message.content.startswith('$hello'):
         await message.channel.send('hello')  
     
-    elif message.content.startswith('$join'):
+    if message.content.startswith('$join'):
         channel = message.author.voice.channel
         await channel.connect()
     
-    elif message.content.startswith('$leave') and client.voice_clients:
+    if message.content.startswith('$leave') and client.voice_clients:
         await client.voice_clients[0].disconnect()
     
-    elif message.content.startswith('$play'):
+    if message.content.startswith('$play'):
         
         if 'https://www.youtube.com/watch?v=' not in message.content:
             file_num = int(message.content.split(' ')[1])
@@ -51,13 +55,13 @@ async def on_message(message):
         if not client.voice_clients[0].is_playing():
             client.voice_clients[0].play(audio_source)       
     
-    elif message.content.startswith('$pause') and client.voice_clients[0].is_playing():
+    if message.content.startswith('$pause') and client.voice_clients[0].is_playing():
         client.voice_clients[0].pause()
 
-    elif message.content.startswith('$resume') and client.voice_clients[0].is_paused():
+    if message.content.startswith('$resume') and client.voice_clients[0].is_paused():
         client.voice_clients[0].resume()
     
-    elif message.content.startswith('$list'):
+    if message.content.startswith('$list'):
         record_list = records.get_records()
         for row in record_list.index:
             await message.channel.send('{} {}'.format(row, record_list.loc[row, 'title']))
