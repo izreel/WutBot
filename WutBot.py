@@ -19,9 +19,9 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.author.id == 163221581051592704:
-        await message.channel.send('ignored')
-        return
+    # if message.author.id == 163221581051592704:
+    #     await message.channel.send('ignored')
+    #     return
 
     if message.content.startswith('$hello'):
         await message.channel.send('hello')  
@@ -63,8 +63,12 @@ async def on_message(message):
     
     if message.content.startswith('$list'):
         record_list = records.get_records()
+        audio_list = ''
         for row in record_list.index:
-            await message.channel.send('{} {}'.format(row, record_list.loc[row, 'title']))
+            time = f'{int(record_list.loc[row, "duration"]/60)}:{record_list.loc[row, "duration"]%60:02d}'
+            audio_list += f'{row} {record_list.loc[row, "title"]} ' + time+ '\n'
+        
+        await message.channel.send(audio_list)
 
 
 client.run(data.get("token"))

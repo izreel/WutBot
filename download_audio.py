@@ -17,8 +17,8 @@ def download(url, r):
     
     with youtube_dl.YoutubeDL(download_options) as ydl:
         ydl.download([url])
-        video_title = ydl.extract_info(url, download=False)['title']
-    r.add(video_title, video_id)
+        video_info = ydl.extract_info(url, download=False)
+    r.add(video_info['title'],video_info['duration'], video_id)
     
     return get_file(video_id)
 

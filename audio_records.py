@@ -17,8 +17,8 @@ class AudioRecords:
     def __init__(self):
         self.audio_list = pd.read_csv('/mnt/d/downloaded_audio/audio_list.csv')
 
-    def add(self, title, id):
-        self.audio_list = self.audio_list.append({'title': title, 'id': id}, ignore_index= True)
+    def add(self, title, duration, id):
+        self.audio_list = self.audio_list.append({'title': title, 'duration':duration, 'id': id}, ignore_index= True)
 
     def update(self):
         download_list = open('/mnt/d/downloaded_audio/already_downloaded.txt', 'r')
@@ -30,9 +30,9 @@ class AudioRecords:
             if len(self.audio_list[self.audio_list['id'] == id]) == 0: 
                 try:
                     with youtube_dl.YoutubeDL(download_options) as ydl:
-                        title = ydl.extract_info(url, download=False)['title']
+                        video_info = ydl.extract_info(url, download=False)
 
-                        self.add(title, id)
+                        self.add(video_info['title'], video_info['duration'], id)
                 except:
                     continue
         
