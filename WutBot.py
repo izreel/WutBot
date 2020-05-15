@@ -1,13 +1,15 @@
 import discord
 import json
-import download_audio
 import audio_records
+
+from discord.ext import commands
+commands.Bot(command_prefix= '.')
 
 with open('key.config') as json_file:
     data = json.load(json_file)
 
 client = discord.Client()
-records = audio_records.AudioRecords()
+records = audio_records.AudioRecords(data)
 
 @client.event
 async def on_ready():
@@ -18,10 +20,6 @@ async def on_message(message):
 
     if message.author == client.user:
         return
-
-    # if message.author.id == 163221581051592704:
-    #     await message.channel.send('ignored')
-    #     return
 
     if message.content.startswith('$hello'):
         await message.channel.send('hello')  
@@ -36,11 +34,14 @@ async def on_message(message):
     if message.content.startswith('$play'):
         
         if 'https://www.youtube.com/watch?v=' not in message.content:
-            file_num = int(message.content.split(' ')[1])
-            audio_file = download_audio.get_file(records.get_records().loc[file_num, 'id'])    
+            try:
+                file_num = int(message.content.split(' ')[1])
+            except:
+                await message.channel.send('Choose a valid number from list')
+            audio_file = records.get_file(records.get_records().loc[file_num, 'id'])    
         else:
             video_url = message.content.split(' ')[1]
-            audio_file = download_audio.download(video_url, records)
+            audio_file = records.download(video_url)
 
         try:
             audio_source = await discord.FFmpegOpusAudio.from_probe(audio_file)

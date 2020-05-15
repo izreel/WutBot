@@ -1,43 +1,41 @@
 import pandas as pd
-import download_audio
 import youtube_dl
 
-download_options = {
-    'download_archive' : '/mnt/d/downloaded_audio/already_downloaded.txt',
-    'outtmpl' : '/mnt/d/downloaded_audio/%(display_id)s.%(ext)s',
-    'format': 'bestaudio/best',
-    'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3',
-        'preferredquality' : '5'
-    }]
-}
-
 class AudioRecords:
-    def __init__(self):
-        self.audio_list = pd.read_csv('/mnt/d/downloaded_audio/audio_list.csv')
+    def __init__(self, config):
+        self.config = config
+        self.audio_list = pd.read_csv(self.config["directory"] + self.config["audio_records"])
 
-    def add(self, title, duration, id):
-        self.audio_list = self.audio_list.append({'title': title, 'duration':duration, 'id': id}, ignore_index= True)
+    def download(self, url, d= True):
+        with youtube_dl.YoutubeDL(self.config["options"]) as ydl:
+            video_info = ydl.extract_info(url, download= d)
+
+        return {col : video_info[col] for col in self.audio_list.columns}
+
+    def get_file(self, id):
+        return self.config["directory"] + id + '.mp3'
+
+    def add(self, url, d= True):
+        added_record = self.download(url, d)
+        self.audio_list = self.audio_list.append(added_record, ignore_index= True)
+        return self.get_file(added_record['id'])
 
     def update(self):
-        download_list = open('/mnt/d/downloaded_audio/already_downloaded.txt', 'r')
+        download_list = open(self.config["directory"] + self.config["download_archive"], 'r')
 
         for x in download_list:
             url = 'https://www.youtube.com/watch?v='
             id =  x.split(' ')[1].replace('\n', '')
             url += id
+            
             if len(self.audio_list[self.audio_list['id'] == id]) == 0: 
                 try:
-                    with youtube_dl.YoutubeDL(download_options) as ydl:
-                        video_info = ydl.extract_info(url, download=False)
-
-                        self.add(video_info['title'], video_info['duration'], id)
+                    self.add(url, False)
                 except:
                     continue
         
         download_list.close()
-        self.audio_list.to_csv('/mnt/d/downloaded_audio/audio_list.csv', index= False)
+        self.audio_list.to_csv(self.config["directory"] + self.config["audio_records"], index= False)
     
     def get_records(self):
         return self.audio_list
