@@ -13,7 +13,7 @@ class AudioRecords:
         return {col : video_info[col] for col in self.audio_list.columns}
 
     def get_file(self, id):
-        return self.config["directory"] + id + '.mp3'
+        return self.config["directory"] + id + '.mp3', self.audio_list[self.audio_list['id'] == id].iloc[0]['title']
 
     def add(self, url, d= True):
         added_record = self.download(url, d)
