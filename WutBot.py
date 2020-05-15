@@ -2,9 +2,6 @@ import discord
 import json
 import audio_records
 
-from discord.ext import commands
-commands.Bot(command_prefix= '.')
-
 with open('key.config') as json_file:
     data = json.load(json_file)
 
@@ -38,6 +35,7 @@ async def on_message(message):
                 file_num = int(message.content.split(' ')[1])
             except:
                 await message.channel.send('Choose a valid number from list')
+                return
             audio_file = records.get_file(records.get_records().loc[file_num, 'id'])    
         else:
             video_url = message.content.split(' ')[1]
