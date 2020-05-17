@@ -9,11 +9,7 @@ with open('key.config') as json_file:
 client = discord.Client()
 records = audio_records.AudioRecords(data)
 
-#file name?
 audio_queue = []
-
-def test_print(m):
-    m.channel.send('testing')
 
 @client.event
 async def on_ready():
