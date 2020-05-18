@@ -17,7 +17,11 @@ class AudioRecords:
 
     def add(self, url, d= True):
         added_record = self.download(url, d)
-        self.audio_list = self.audio_list.append(added_record, ignore_index= True)
+
+        if ((self.audio_list['title']== added_record['title']) & (self.audio_list['duration'] == added_record['duration']) & (self.audio_list['id'] == added_record['id'])).any():
+            self.audio_list = self.audio_list.append(added_record, ignore_index= True)
+            self.audio_list.to_csv(self.config["directory"] + self.config["audio_records"], index= False)
+        
         return self.get_file(added_record['id'])
 
     def update(self):
@@ -28,7 +32,7 @@ class AudioRecords:
             id =  x.split(' ')[1].replace('\n', '')
             url += id
             
-            if len(self.audio_list[self.audio_list['id'] == id]) == 0: 
+            if (self.audio_list['id'] == id).any(): 
                 try:
                     self.add(url, False)
                 except:
@@ -39,3 +43,13 @@ class AudioRecords:
     
     def get_records(self):
         return self.audio_list
+
+    def get_audio_record(self, i):
+        audio_record = self.audio_list.iloc[i]
+        return f'{i} {audio_record["title"]} {int(audio_record["duration"]/60)}:{audio_record["duration"]%60:02d}\n'
+
+    def get_latest_record(self):
+        return self.get_audio_record(self.audio_list.index[-1])
+
+    def record_length(self):
+        return len(self.audio_list)
