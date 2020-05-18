@@ -46,36 +46,36 @@ async def on_message(message):
     if message.content.startswith('$hello'):
         await message.channel.send('hello')  
         return
-            
+
     if message.content.startswith('$join'):
         channel = message.author.voice.channel
         await channel.connect()
         return
-            
+
     if message.content.startswith('$leave') and client.voice_clients:
         await client.voice_clients[0].disconnect()
         return
-            
+
     if message.content.startswith('$pause') and client.voice_clients[0].is_playing():
         client.voice_clients[0].pause()
         return
-        
+
     if message.content.startswith('$resume') and client.voice_clients[0].is_paused():
         client.voice_clients[0].resume()
         return
-            
+
     if message.content.startswith('$list'):
         await message.channel.send('check song-list channel')
         return
-            
+
     if message.content.startswith('$skip'):
         client.voice_clients[0].stop()
         return
-            
+
     if message.content.startswith('$current'):
         await message.channel.send('Playing: ' + audio_queue[0][1])
         return
-            
+
     if message.content.startswith('$queue'):
         queue_list = '`Currently in queue:\n'
         for i,j in enumerate(audio_queue):
@@ -86,7 +86,7 @@ async def on_message(message):
         
         await message.channel.send(queue_list+'`')
         return
-        
+
     if message.content.startswith('$play'):   
         if 'https://www.youtube.com/watch?v=' not in message.content:
             try:
@@ -108,10 +108,6 @@ async def on_message(message):
     if message.content.startswith('$random'):
         song_number = random.randint(0, records.record_length()-1)
         audio_file = records.get_file(records.get_records().loc[song_number, 'id'])
-        
-        if not client.voice_clients:
-            channel = message.author.voice.channel
-            await channel.connect()
         
     if not client.voice_clients:
         channel = message.author.voice.channel
