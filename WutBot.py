@@ -87,38 +87,42 @@ async def on_message(message):
         await message.channel.send(queue_list+'`')
         return
 
-    if message.content.startswith('$play'):   
-        if 'https://www.youtube.com/watch?v=' not in message.content:
-            try:
-                file_num = int(message.content.split(' ')[1])
-            except:
-                await message.channel.send('Choose a valid number from list or give a proper youtube link')
-                return
-            audio_file = records.get_file(records.get_records().loc[file_num, 'id'])    
-        else:
-            video_url = message.content.split(' ')[1]
-            try:
-                audio_file = records.add(video_url)
-            except:
-                await message.channel.send('Error while getting ready to play')
-                return
-            
-            await get_list_channel().send('`'+ records.get_latest_record() +'`')
+    if message.content.startswith('$remove'):
+        return
 
-    if message.content.startswith('$random'):
-        song_number = random.randint(0, records.record_length()-1)
-        audio_file = records.get_file(records.get_records().loc[song_number, 'id'])
+    if message.content.startswith('$play') or  message.content.startswith('$random'):   
+        if message.content.startswith('$play'):
+            if 'https://www.youtube.com/watch?v=' not in message.content:
+                try:
+                    file_num = int(message.content.split(' ')[1])
+                except:
+                    await message.channel.send('Choose a valid number from list or give a proper youtube link')
+                    return
+                audio_file = records.get_file(records.get_records().loc[file_num, 'id'])    
+            else:
+                video_url = message.content.split(' ')[1]
+                try:
+                    audio_file = records.add(video_url)
+                except:
+                    await message.channel.send('Error while getting ready to play')
+                    return
+                
+                await get_list_channel().send('`'+ records.get_latest_record() +'`')
+
+        elif message.content.startswith('$random'):
+            song_number = random.randint(0, records.record_length()-1)
+            audio_file = records.get_file(records.get_records().loc[song_number, 'id'])
         
-    if not client.voice_clients:
-        channel = message.author.voice.channel
-        await channel.connect()
-        
-    audio_queue.append(audio_file)
-    if not client.voice_clients[0].is_playing():
-        audio_source = discord.FFmpegOpusAudio(audio_queue[0][0])
-        client.voice_clients[0].play(audio_source, after= lambda e: update_queue())
-    else:
-        await message.channel.send('adding to queue')
+        if not client.voice_clients:
+            channel = message.author.voice.channel
+            await channel.connect()
+            
+        audio_queue.append(audio_file)
+        if not client.voice_clients[0].is_playing():
+            audio_source = discord.FFmpegOpusAudio(audio_queue[0][0])
+            client.voice_clients[0].play(audio_source, after= lambda e: update_queue())
+        else:
+            await message.channel.send('adding to queue')
 
 client.run(data.get("token"))
 records.update()
