@@ -81,7 +81,7 @@ async def songlist(message):
 async def skip(message):
      wut_bot.voice_clients[0].stop()
 
-@wut_bot.command(aliases= 'current', description= 'Displays current song/audio playing')
+@wut_bot.command(aliases= ['current'], description= 'Displays current song/audio playing')
 async def current_song(message):
     await message.channel.send('Playing: ' + audio_queue[0][1])
 
@@ -154,7 +154,7 @@ async def play(message):
 '''
 Picks random number from 0 to total number of available (downloaded) audio and adds it to queue through play_audio function.
 '''
-@wut_bot.command(aliases= 'random', description= 'Plays random song/audio from song list')
+@wut_bot.command(aliases= ['random'], description= 'Plays random song/audio from song list')
 async def randomsong(message):
     song_number = random.randint(0, records.record_length()-1)
     audio_file = records.get_file(records.get_records().loc[song_number, 'id'])
