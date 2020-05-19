@@ -1,20 +1,41 @@
 import pandas as pd
 import youtube_dl
 
+'''
+Class used to keep track of all downloaded audio used for Discord bot.
+'''
 class AudioRecords:
+    
+    '''
+    Constructor for class. Creates class variables config (contains data from key.config) and audio_list (contains information on downloaded audio)
+    Takes in data from config file which is used for directory of stored audio and audio records.
+    '''
     def __init__(self, config):
         self.config = config
+
+        #DataFrame created from csv, has columns [title, duration, id]
         self.audio_list = pd.read_csv(self.config["directory"] + self.config["audio_records"])
 
+    '''
+    Downloads audio and video/audio information from Youtube using youtube-dl package.
+    Download options received from config.
+    '''
     def download(self, url, d= True):
         with youtube_dl.YoutubeDL(self.config["options"]) as ydl:
             video_info = ydl.extract_info(url, download= d)
 
         return {col : video_info[col] for col in self.audio_list.columns}
 
+    '''
+    Returns path of audio and title of video/audio.
+    '''
     def get_file(self, id):
         return self.config["directory"] + id + '.mp3', self.audio_list[self.audio_list['id'] == id].iloc[0]['title']
 
+    '''
+    Downloads video/audio (if needed) and it's info.
+    Will add info if not already in the records and update csv.
+    '''
     def add(self, url, d= True):
         added_record = self.download(url, d)
 
@@ -24,6 +45,9 @@ class AudioRecords:
         
         return self.get_file(added_record['id'])
 
+    '''
+    Update records if for some reason audio not recorded in csv after being downloaded.
+    '''
     def update(self):
         download_list = open(self.config["directory"] + self.config["download_archive"], 'r')
 
