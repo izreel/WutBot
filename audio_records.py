@@ -32,7 +32,7 @@ class AudioRecords:
             id =  x.split(' ')[1].replace('\n', '')
             url += id
             
-            if (self.audio_list['id'] == id).any(): 
+            if not (self.audio_list['id'] == id).any(): 
                 try:
                     self.add(url, False)
                 except:
