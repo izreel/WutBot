@@ -39,7 +39,8 @@ class AudioRecords:
     def add(self, url, d= True):
         added_record = self.download(url, d)
 
-        if ((self.audio_list['title']== added_record['title']) & (self.audio_list['duration'] == added_record['duration']) & (self.audio_list['id'] == added_record['id'])).any():
+        if not ((self.audio_list['title']== added_record['title']) & (self.audio_list['duration'] == added_record['duration']) & (self.audio_list['id'] == added_record['id'])).any():
+            print(f'Adding {added_record["title"]}, {added_record["id"]} to records')
             self.audio_list = self.audio_list.append(added_record, ignore_index= True)
             self.audio_list.to_csv(self.config["directory"] + self.config["audio_records"], index= False)
         
