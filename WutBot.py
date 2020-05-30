@@ -26,15 +26,20 @@ def get_list_channel():
     for channel in wut_bot.guilds[0].channels:
         if channel.name == 'song-list':
             return channel
-    return True
+
+async def delete_previous_list():
+    channel = get_list_channel()
+
+    await channel.purge()
 
 #lists all songs stored in discord at time of startup
 @wut_bot.event
 async def on_ready():
-    if get_list_channel():
-        return
     print('We have logged in as {0.user}'.format(wut_bot))
-    
+    print('Deleting old messages from song-list')
+    await delete_previous_list()
+
+    print('Printing list on song-list')
     record_list = records.get_records()
     audio_list = '`'
     
@@ -82,7 +87,7 @@ async def songlist(ctx):
 
 @wut_bot.command(description= 'Skips song/audio')
 async def skip(ctx):
-     wut_bot.voice_clients[0].stop()
+    wut_bot.voice_clients[0].stop()
 
 @wut_bot.command(description= 'Displays current song/audio playing')
 async def current(ctx):
@@ -151,8 +156,8 @@ async def play(ctx):
         except:
             await ctx.channel.send('Error while getting ready to play, try again')
             return
-        if get_list_channel():       
-            await get_list_channel().send('`'+ records.get_latest_record() +'`')
+     
+        await get_list_channel().send('`'+ records.get_latest_record() +'`')
 
     await play_audio(ctx, audio_file)
 
@@ -182,4 +187,5 @@ async def randomsong(ctx):
             await ctx.channel.send(f'Pick a valid number from 1 to {records.record_length()}')
 
 wut_bot.run(data.get("token"))
+print('Shutting down, updating records')
 records.update()
