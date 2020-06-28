@@ -83,7 +83,7 @@ async def resume(ctx):
 
 @wut_bot.command(description= 'Tells you to look at song-list u fk')
 async def songlist(ctx):
-    await ctx.channel.send('check song-list channel')
+    await ctx.channel.send('check #song-list channel')
 
 @wut_bot.command(description= 'Skips song/audio')
 async def skip(ctx):
@@ -115,8 +115,8 @@ async def play_audio(ctx, audio_file, queue_message= True):
             try:
                 audio_queue.pop(0)
                 audio_source = discord.FFmpegOpusAudio(audio_queue[0][0])
-                wut_bot.voice_clients[0].play(audio_source, after= lambda e: update_queue())
                 print(f'playing {audio_queue[0][1]}')
+                wut_bot.voice_clients[0].play(audio_source, after= lambda e: update_queue())
             except:
                 print('queue is now empty')
     
@@ -125,12 +125,12 @@ async def play_audio(ctx, audio_file, queue_message= True):
     
     audio_queue.append(audio_file)
     
-    if not wut_bot.voice_clients[0].is_playing():
+    if not wut_bot.voice_clients[0].is_playing() and len(audio_queue) == 1:
         audio_source = discord.FFmpegOpusAudio(audio_file[0])
         await ctx.channel.send(f'Playing {audio_file[1]}')
         wut_bot.voice_clients[0].play(audio_source, after= lambda e: update_queue())
     elif queue_message:
-        await ctx.channel.send(f'adding {audio_file[1]}to  queue')
+        await ctx.channel.send(f'adding {audio_file[1]} to queue')
 
 '''
 expected usage: $play [youtube link or integer]
