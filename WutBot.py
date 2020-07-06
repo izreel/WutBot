@@ -7,13 +7,18 @@ import json
 import audio_records
 import asyncio
 import numpy as np
+import cv2
+import tensorflow as tf
+import requests
+import shutil
 
 #reads config file containing information such as token and youtube download data
 with open('key.config') as json_file:
     data = json.load(json_file)
 
 wut_bot = commands.Bot(command_prefix= '$')
-records = audio_records.AudioRecords(data)
+records = audio_records.AudioRecords(data["youtube_dl"])
+classification_model = tf.keras.models.load_model(data["model_weights"])
 
 '''
 list containing songs in queue
@@ -185,6 +190,66 @@ async def randomsong(ctx):
             await ctx.channel.send(f'Added {random_numbers} songs to queue')
         else:
             await ctx.channel.send(f'Pick a valid number from 1 to {records.record_length()}')
+
+#download an image from a given URL. Mainly used when $classify command also includes a url instead of an attachment
+def download_image(url):
+    r = requests.get(url, stream= True)
+
+    if r.status_code == 200:
+        r.raw.decode_content = True
+        with open(data["images"], 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+            f.close()
+    else:
+        return False
+
+
+#gets image and modifies it so that it can be fed to the model
+def get_image():
+    image = cv2.imread(data["images"])
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (200,200))
+    image = np.expand_dims(image, axis= 0)
+    return image
+
+'''
+Given an input of an image(s) or url of an image, use a neural network to classify them as either a dog or cat picture.
+'''
+@wut_bot.command()
+async def classify(ctx):
+    results = []
+    
+    #loops every attachment added to command call and classifies them one by one
+    for attachment in  ctx.message.attachments:
+        await attachment.save(data["images"])
+        result = classification_model.predict(get_image())
+        results.append(result.round())
+
+    #loops through every url given and downloads image from url and classifies them one by one
+    for embed in ctx.message.embeds:
+        image_url = embed.url
+        
+        if not download_image(image_url):
+            await ctx.channel.send('Could not properly download image')
+            return
+        
+        result = classification_model.predict(get_image())
+        results.append(result.round())
+    
+    if len(results) > 1:
+        result_output = 'The following from top to bottom are: '
+    elif len(results) == 1:
+        result_output = 'This is a '
+    else:
+        result_output = 'Nothing to classify, try again'
+
+    for result in results:
+        if result == 1:
+             result_list += 'Dog '
+        else:
+            result_list+= 'Cat '
+    
+    await ctx.channel.send(result_output)
 
 wut_bot.run(data.get("token"))
 print('Shutting down, updating records')
