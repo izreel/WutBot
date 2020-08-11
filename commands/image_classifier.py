@@ -1,14 +1,15 @@
 '''
 File for class of commands dealing with images (mainly classifying them)
 '''
+import os
+# Prevent TensorFlow from using GPU (GPU not needed for this application)
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 from discord.ext import commands
 import cv2
 import numpy as np
 import tensorflow as tf
-import os
 import shutil
 import requests
-
 
 class ImageClassifier(commands.Cog):
     def __init__(self, bot, data):
@@ -46,7 +47,7 @@ class ImageClassifier(commands.Cog):
         results = []
         
         #loops every attachment added to command call and classifies them one by one
-        for attachment in  ctx.message.attachments:
+        for attachment in ctx.message.attachments:
             await attachment.save(self.data["images"])
             result = self.classifier.predict(self.get_image())
             results.append(result.round())
@@ -58,8 +59,8 @@ class ImageClassifier(commands.Cog):
             if not self.download_image(image_url):
                 await ctx.channel.send('Could not properly download image')
                 return
-            
-            result = self.classifier.predict(self.get_image())
+            with tf.device('/cpu:0'):
+                result = self.classifier.predict(self.get_image())
             results.append(result.round())
         
         if len(results) > 1:
@@ -76,4 +77,4 @@ class ImageClassifier(commands.Cog):
                 result_output += 'Cat '
         
         await ctx.channel.send(result_output)
-        os.remove(self.data["images"])
+        # os.remove(self.data["images"])
