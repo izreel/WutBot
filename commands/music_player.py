@@ -34,6 +34,8 @@ class MusicPlayer(commands.Cog):
                 try:
                     if not self.audio_repeat:
                         self.audio_queue.pop(0)
+                    else:
+                        self.audio_queue.append(self.audio_queue.pop(0))
                     audio_source = discord.FFmpegOpusAudio(self.audio_queue[0][0])
                     print(f'playing {self.audio_queue[0][1]}')
                     ctx.voice_client.play(audio_source, after= lambda e: update_queue())
