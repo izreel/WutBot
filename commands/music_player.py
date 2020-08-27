@@ -4,23 +4,23 @@ anything to do with voice and audio consolidated as a class
 '''
 import discord
 from discord.ext import commands
-from commands import misc
-from commands.audio_records import AudioRecords
+from commands import misc, audio_records
 import numpy as np
 
 class MusicPlayer(commands.Cog):
     def __init__(self, bot, data):
         self.bot = bot
-        self.records = AudioRecords(data["youtube_dl"])
+        self.records = audio_records.AudioRecords(data["youtube_dl"])
         
         #each element is a tuple containing path of audio and title of video (audio)
         self.audio_queue = []
+
+        self.audio_repeat = False
     
     '''
     function for joining voice channel.
     '''
     async def join_voice(self, ctx):
-        print(type(ctx))
         channel = ctx.author.voice.channel
         await channel.connect()
     
@@ -32,7 +32,8 @@ class MusicPlayer(commands.Cog):
         def update_queue():
             if self.audio_queue:
                 try:
-                    self.audio_queue.pop(0)
+                    if not self.audio_repeat:
+                        self.audio_queue.pop(0)
                     audio_source = discord.FFmpegOpusAudio(self.audio_queue[0][0])
                     print(f'playing {self.audio_queue[0][1]}')
                     ctx.voice_client.play(audio_source, after= lambda e: update_queue())
@@ -176,3 +177,8 @@ class MusicPlayer(commands.Cog):
     async def clear(self, ctx):
         print('Clearing queue')
         self.audio_queue.clear()
+
+    @commands.command(description= 'Sets Music Player on repeat')
+    async def repeat(self, ctx):
+        self.audio_repeat = not self.audio_repeat
+        await ctx.channel.send('Setting repeat to ' + str(self.audio_repeat))
