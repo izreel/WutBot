@@ -19,6 +19,7 @@ def get_audio_list(channel, records):
         if row % 30 == 0 and row > 0:
             audio_list.append(partial_list + '`')
             partial_list = '`'
-    
+    if len(partial_list) > 1:
+        audio_list.append(partial_list + '`')
     return audio_list
 
